@@ -3,7 +3,7 @@ A full-stack ticketing system that allows users to create, manage, and track sup
 
 🚀 Live Demo
 
-👉 [https://corneliusSW20.github.io/ticket-mangement-system/](https://corneliussw20.github.io/ticket-management-system/)
+👉 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Open-black?style=for-the-badge&logo=github)](https://corneliussw20.github.io/ticket-management-system/)
 
 🎯 Purpose
 
