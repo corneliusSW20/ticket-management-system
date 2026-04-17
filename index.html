@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticket Management System</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f7f7f5;
+    --bg-tertiary: #f0efe9;
+    --text: #1a1a18;
+    --text-secondary: #5a5a56;
+    --text-tertiary: #9a9a94;
+    --border: rgba(0,0,0,0.12);
+    --border-hover: rgba(0,0,0,0.28);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --amber-bg: #FAEEDA; --amber-text: #633806;
+    --green-bg: #EAF3DE; --green-text: #27500A;
+    --gray-bg: #F1EFE8; --gray-text: #444441;
+    --red: #E24B4A; --amber: #EF9F27; --green: #639922;
+    --info-bg: #E6F1FB; --info-text: #185FA5;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c;
+      --bg-secondary: #252523;
+      --bg-tertiary: #2c2c2a;
+      --text: #f0efe9;
+      --text-secondary: #a8a8a0;
+      --text-tertiary: #686860;
+      --border: rgba(255,255,255,0.1);
+      --border-hover: rgba(255,255,255,0.25);
+      --blue-bg: #042C53; --blue-text: #B5D4F4;
+      --amber-bg: #412402; --amber-text: #FAC775;
+      --green-bg: #173404; --green-text: #C0DD97;
+      --gray-bg: #2C2C2A; --gray-text: #D3D1C7;
+      --info-bg: #042C53; --info-text: #B5D4F4;
+    }
+  }
+
+  body {
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--bg-tertiary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background: var(--bg);
+    border-bottom: 0.5px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  header h1 {
+    font-size: 16px;
+    font-weight: 500;
+    flex: 1;
+  }
+
+  header .tagline {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  .layout {
+    display: flex;
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
+    margin: 24px auto;
+    gap: 20px;
+    padding: 0 20px;
+  }
+
+  @media (max-width: 680px) {
+    .layout { flex-direction: column; padding: 0 12px; margin: 12px auto; }
+    .sidebar { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+    .sidebar-title { display: none; }
+  }
+
+  .sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sidebar-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 8px 10px 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-secondary);
+    transition: background .15s;
+    user-select: none;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover { background: var(--bg-secondary); }
+  .nav-item.active { background: var(--bg); color: var(--text); font-weight: 500; }
+
+  .nav-badge {
+    margin-left: auto;
+    font-size: 11px;
+    background: var(--info-bg);
+    color: var(--info-text);
+    padding: 1px 7px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .main {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .topbar h2 { font-size: 15px; font-weight: 500; flex: 1; }
+
+  .btn {
+    padding: 7px 14px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border-hover);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s, opacity .15s;
+    font-family: var(--font);
+  }
+
+  .btn:hover { background: var(--bg-secondary); }
+
+  .btn-primary {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  .btn-primary:hover { opacity: .82; background: var(--text); }
+
+  .content { flex: 1; padding: 18px 20px; overflow-y: auto; }
+
+  .filters { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  .chip {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    font-size: 12px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font);
+    transition: background .15s, color .15s;
+  }
+
+  .chip:hover { background: var(--bg-secondary); }
+  .chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  .ticket-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .ticket-row {
+    display: grid;
+    grid-template-columns: 8px 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+
+  .ticket-row:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
+
+  .priority-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .p-high { background: #E24B4A; }
+  .p-med  { background: #EF9F27; }
+  .p-low  { background: #639922; }
+
+  .ticket-info { min-width: 0; }
+  .ticket-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ticket-meta { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+  .badge { padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .badge-open     { background: var(--blue-bg);  color: var(--blue-text);  }
+  .badge-progress { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-resolved { background: var(--green-bg); color: var(--green-text); }
+  .badge-closed   { background: var(--gray-bg);  color: var(--gray-text);  }
+
+  .empty { text-align: center; padding: 48px 20px; color: var(--text-tertiary); font-size: 13px; }
+
+  /* KB */
+  .kb-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .kb-card {
+    padding: 14px 16px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+
+  .kb-card:hover { border-color: var(--border-hover); background: var(--bg-secondary); }
+  .kb-card-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .kb-card-preview { font-size: 12px; color: var(--text-tertiary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .kb-tags { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+  .kb-tag { padding: 2px 8px; border-radius: 20px; font-size: 11px; background: var(--bg-tertiary); color: var(--text-secondary); border: 0.5px solid var(--border); }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px; }
+
+  .stat-card { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 14px; text-align: center; }
+  .stat-num { font-size: 24px; font-weight: 500; }
+  .stat-label { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; }
+
+  .bar-wrap { margin-bottom: 12px; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary); }
+  .bar-track { background: var(--bg-tertiary); border-radius: 20px; height: 6px; overflow: hidden; border: 0.5px solid var(--border); }
+  .bar-fill { background: var(--text); height: 100%; border-radius: 20px; transition: width .5s ease; }
+
+  /* Modal / Detail overlay */
+  .overlay-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+
+  .panel {
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    width: 520px;
+    max-width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 22px;
+  }
+
+  .panel-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
+  .panel-header-info { flex: 1; min-width: 0; }
+  .panel-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+  .panel-meta { font-size: 12px; color: var(--text-tertiary); }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin: 16px 0 6px;
+  }
+
+  .desc-box {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    border: 0.5px solid var(--border);
+  }
+
+  .row2 { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row2 > div { flex: 1; min-width: 120px; }
+
+  /* Form */
+  .form-group { margin-bottom: 13px; }
+  .form-group label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 500; }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 0.5px solid var(--border-hover);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    font-family: var(--font);
+    outline: none;
+    transition: border-color .15s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--text); }
+
+  .form-group textarea { resize: vertical; min-height: 90px; }
+
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+
+  .divider { height: 0.5px; background: var(--border); margin: 12px 0; }
+
+  .icon { width: 15px; height: 15px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <svg class="icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/>
+    <path d="M4 8h8M4 11h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+  </svg>
+  <h1>Ticket System</h1>
+  <span class="tagline">Knowledge-backed support</span>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" aria-label="Main navigation">
+    <div class="sidebar-title">Views</div>
+    <button class="nav-item active" id="nav-tickets" onclick="showView('tickets')">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 8h8M4 11h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      All tickets
+      <span class="nav-badge" id="open-count">0</span>
+    </button>
+    <button class="nav-item" id="nav-kb" onclick="showView('kb')">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2"/><path d="M10 2v4h4M5 9h6M5 12h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Knowledge base
+    </button>
+    <button class="nav-item" id="nav-stats" onclick="showView('stats')">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="9" width="3" height="5" rx="1" fill="currentColor"/><rect x="6.5" y="5" width="3" height="9" rx="1" fill="currentColor"/><rect x="11" y="2" width="3" height="12" rx="1" fill="currentColor"/></svg>
+      Overview
+    </button>
+  </nav>
+
+  <main class="main" id="main-content" aria-live="polite"></main>
+</div>
+
+<div id="overlay" role="dialog" aria-modal="true"></div>
+
+<script>
+const state = {
+  view: 'tickets',
+  filter: 'all',
+  nextId: 7,
+  nextKbId: 5,
+  tickets: [
+    { id:'TK-001', title:'Login page returns 500 error on Safari', status:'open', priority:'high', category:'Bug', assignee:'Sarah K.', created:'Apr 14', desc:'Users on Safari 17+ are experiencing a 500 error when attempting to login. Issue is reproducible with both email and OAuth flows. Affects approximately 12% of our user base. Browser console shows a CORS preflight failure on the /auth/token endpoint.', kb:[0] },
+    { id:'TK-002', title:'Export to CSV not including custom fields', status:'in-progress', priority:'med', category:'Bug', assignee:'James T.', created:'Apr 13', desc:'When exporting data to CSV, custom field columns are missing from the output. Standard fields export correctly. Confirmed on v2.3.1. The export query appears to only join the core fields table and is missing the custom_fields join.', kb:[2] },
+    { id:'TK-003', title:'Add bulk ticket assignment feature', status:'open', priority:'med', category:'Feature', assignee:'Unassigned', created:'Apr 12', desc:'Support team needs ability to select multiple tickets and assign them to an agent in one action. Currently requires individual updates which is very time-consuming during high volume periods. Estimated 30+ tickets per day need reassignment.', kb:[3] },
+    { id:'TK-004', title:'Email notifications delayed by ~2 hours', status:'in-progress', priority:'high', category:'Bug', assignee:'Maria L.', created:'Apr 11', desc:'Outgoing email notifications are consistently delayed by 1-2 hours. The job queue processes correctly but SMTP handoff is slow. Suspect rate limiting from current provider. Logs show retry backoff triggering on ~40% of sends.', kb:[1] },
+    { id:'TK-005', title:'Dashboard loading slowly for large accounts', status:'resolved', priority:'low', category:'Performance', assignee:'Chris P.', created:'Apr 9', desc:'Accounts with 10k+ records experience 8-12 second dashboard load times. Profiling revealed an N+1 query pattern in the activity feed component. Fixed by adding eager loading with a single JOIN query. Load time now under 400ms.', kb:[2] },
+    { id:'TK-006', title:'Password reset link expiring too quickly', status:'closed', priority:'low', category:'Bug', assignee:'Sarah K.', created:'Apr 7', desc:'Reset links expire after 15 minutes but users report them failing within 5 minutes. Root cause was a timezone mismatch — server generates tokens in UTC but validation was comparing against local time. Fixed in patch v2.2.9.', kb:[0] },
+  ],
+  kbArticles: [
+    { id:'KB-001', title:'Debugging authentication & session issues', content:'Authentication problems often stem from token expiry, CORS misconfigurations, or third-party OAuth provider changes. Start by checking the browser console for 401/403 errors. Verify that session cookies are being set with correct SameSite attributes. For Safari-specific issues, check ITP (Intelligent Tracking Prevention) settings which may block third-party cookies required for OAuth flows.\n\nCommon fixes: extend token TTL, use server-side sessions instead of client tokens, whitelist domains in OAuth provider settings. Always test auth flows in an incognito window to rule out cached state.', tags:['auth','safari','sessions','oauth'] },
+    { id:'KB-002', title:'Email delivery troubleshooting guide', content:'When emails are delayed or not delivered, check in this order: (1) SMTP connection logs for timeouts, (2) sending domain SPF/DKIM/DMARC records, (3) provider rate limits — most services enforce hourly and daily caps, (4) bounce logs for hard failures.\n\nFor bulk sending, use a dedicated IP. Implement exponential backoff on retries. Monitor delivery rates in your provider dashboard. Recommended providers for reliability: SendGrid, Postmark, AWS SES. If delays are consistent, check whether the job queue worker has enough concurrency.', tags:['email','smtp','deliverability'] },
+    { id:'KB-003', title:'Performance optimization for large datasets', content:'Common performance issues with large datasets: N+1 queries (use eager loading or JOINs instead of looping queries), missing database indexes (check query plans with EXPLAIN ANALYZE), large payload responses (paginate API results, use field selection).\n\nFor frontend: virtualize long lists, lazy-load heavy components, debounce search and filter inputs. CSV exports with millions of rows should be done asynchronously with a job queue — never synchronously in a request. Add progress feedback for long-running operations.', tags:['performance','database','sql','exports'] },
+    { id:'KB-004', title:'Feature request evaluation criteria', content:'When triaging feature requests, evaluate against: (1) number of users impacted, (2) alignment with product roadmap, (3) implementation complexity, (4) available workarounds.\n\nUse the RICE scoring framework: Reach × Impact × Confidence ÷ Effort. Requests scoring above 50 go to backlog for sprint planning. Always update the ticket with the rationale, even for declined requests. Communicate estimated timelines to reporters and follow up when the feature ships.', tags:['process','features','triage','rice'] },
+  ],
+};
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+function updateBadge() {
+  const n = state.tickets.filter(t => t.status === 'open' || t.status === 'in-progress').length;
+  document.getElementById('open-count').textContent = n;
+}
+
+function statusBadge(s) {
+  const cls   = { open:'badge-open', 'in-progress':'badge-progress', resolved:'badge-resolved', closed:'badge-closed' };
+  const label = { open:'Open', 'in-progress':'In progress', resolved:'Resolved', closed:'Closed' };
+  return `<span class="badge ${cls[s] || 'badge-closed'}">${label[s] || s}</span>`;
+}
+
+function priorityDot(p) {
+  const cls = { high:'p-high', med:'p-med', low:'p-low' };
+  return `<div class="priority-dot ${cls[p] || 'p-low'}" title="${p} priority"></div>`;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDesc(str) {
+  return escHtml(str).replace(/\n/g, '<br>');
+}
+
+// ── views ─────────────────────────────────────────────────────────────────────
+
+function renderTickets() {
+  const list = state.filter === 'all'
+    ? state.tickets
+    : state.tickets.filter(t => t.status === state.filter);
+
+  const rows = list.length === 0
+    ? `<div class="empty">No tickets match this filter.</div>`
+    : list.map(t => `
+        <div class="ticket-row" onclick="openTicket('${t.id}')" tabindex="0" role="button" aria-label="Open ticket ${t.id}">
+          ${priorityDot(t.priority)}
+          <div class="ticket-info">
+            <div class="ticket-title">${escHtml(t.title)}</div>
+            <div class="ticket-meta">${t.id} &middot; ${t.category} &middot; ${escHtml(t.assignee)} &middot; ${t.created}</div>
+          </div>
+          ${statusBadge(t.status)}
+        </div>`).join('');
+
+  const filterLabels = { all:'All', open:'Open', 'in-progress':'In progress', resolved:'Resolved', closed:'Closed' };
+  const chips = Object.entries(filterLabels).map(([val, lbl]) =>
+    `<button class="chip ${state.filter === val ? 'active' : ''}" onclick="setFilter('${val}')">${lbl}</button>`
+  ).join('');
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="topbar">
+      <h2>Tickets</h2>
+      <button class="btn btn-primary" onclick="openNewTicket()">+ New ticket</button>
+    </div>
+    <div class="content">
+      <div class="filters">${chips}</div>
+      <div class="ticket-list">${rows}</div>
+    </div>`;
+}
+
+function renderKB() {
+  const cards = state.kbArticles.map((a, i) => `
+    <div class="kb-card" onclick="openArticle(${i})" tabindex="0" role="button" aria-label="Open article ${a.id}">
+      <div class="kb-card-title">${escHtml(a.title)}</div>
+      <div class="kb-card-preview">${escHtml(a.content)}</div>
+      <div class="kb-tags">${a.tags.map(t => `<span class="kb-tag">${escHtml(t)}</span>`).join('')}</div>
+    </div>`).join('');
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="topbar">
+      <h2>Knowledge base</h2>
+      <button class="btn btn-primary" onclick="openNewArticle()">+ Add article</button>
+    </div>
+    <div class="content">
+      <div class="kb-list">${cards}</div>
+    </div>`;
+}
+
+function renderStats() {
+  const all = state.tickets;
+  const open    = all.filter(t => t.status === 'open').length;
+  const prog    = all.filter(t => t.status === 'in-progress').length;
+  const res     = all.filter(t => t.status === 'resolved').length;
+  const closed  = all.filter(t => t.status === 'closed').length;
+  const high    = all.filter(t => t.priority === 'high').length;
+  const total   = all.length || 1;
+
+  const cats = ['Bug','Feature','Performance'];
+  const bars = cats.map(cat => {
+    const count = all.filter(t => t.category === cat).length;
+    const pct   = Math.round(count / total * 100);
+    return `<div class="bar-wrap">
+      <div class="bar-label"><span>${cat}</span><span>${count} ticket${count !== 1 ? 's' : ''}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('main-content').innerHTML = `
+    <div class="topbar"><h2>Overview</h2></div>
+    <div class="content">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num">${all.length}</div><div class="stat-label">Total tickets</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#185FA5">${open}</div><div class="stat-label">Open</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#BA7517">${prog}</div><div class="stat-label">In progress</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#3B6D11">${res}</div><div class="stat-label">Resolved</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#888">${closed}</div><div class="stat-label">Closed</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#A32D2D">${high}</div><div class="stat-label">High priority</div></div>
+        <div class="stat-card"><div class="stat-num">${state.kbArticles.length}</div><div class="stat-label">KB articles</div></div>
+      </div>
+      <div class="section-label" style="margin-top:8px">Tickets by category</div>
+      ${bars}
+    </div>`;
+}
+
+// ── navigation ────────────────────────────────────────────────────────────────
+
+function setFilter(f) { state.filter = f; renderTickets(); }
+
+function showView(v) {
+  state.view = v;
+  ['tickets','kb','stats'].forEach(id => {
+    document.getElementById('nav-' + id).classList.toggle('active', id === v);
+  });
+  if (v === 'tickets') renderTickets();
+  else if (v === 'kb') renderKB();
+  else renderStats();
+}
+
+// ── overlays ──────────────────────────────────────────────────────────────────
+
+function closeOverlay() {
+  document.getElementById('overlay').innerHTML = '';
+}
+
+function trapClick(e) {
+  if (e.target === e.currentTarget) closeOverlay();
+}
+
+// ── ticket detail ─────────────────────────────────────────────────────────────
+
+function openTicket(id) {
+  const t = state.tickets.find(x => x.id === id);
+  if (!t) return;
+
+  const relatedKB = (t.kb || []).map(i => state.kbArticles[i]).filter(Boolean);
+  const kbSection = relatedKB.length === 0 ? '' : `
+    <div class="section-label">Related knowledge base</div>
+    <div class="kb-list">
+      ${relatedKB.map(a => `
+        <div class="kb-card" style="background:var(--bg-secondary)">
+          <div class="kb-card-title">${escHtml(a.title)}</div>
+          <div class="kb-card-preview">${escHtml(a.content)}</div>
+          <div class="kb-tags">${a.tags.map(tag => `<span class="kb-tag">${escHtml(tag)}</span>`).join('')}</div>
+        </div>`).join('')}
+    </div>`;
+
+  document.getElementById('overlay').innerHTML = `
+    <div class="overlay-bg" onclick="trapClick(event)">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-header-info">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="font-size:12px;color:var(--text-tertiary)">${t.id}</span>
+              ${statusBadge(t.status)}
+              ${priorityDot(t.priority)}
+            </div>
+            <div class="panel-title">${escHtml(t.title)}</div>
+            <div class="panel-meta">${t.category} &middot; Assigned to ${escHtml(t.assignee)} &middot; ${t.created}</div>
+          </div>
+          <button class="btn" onclick="closeOverlay()" aria-label="Close">&#10005;</button>
+        </div>
+        <div class="section-label">Description</div>
+        <div class="desc-box">${formatDesc(t.desc)}</div>
+        <div class="row2" style="margin-top:14px">
+          <div>
+            <div class="section-label">Status</div>
+            <select onchange="updateField('${t.id}','status',this.value)" style="width:100%;padding:7px 10px;border:0.5px solid var(--border-hover);border-radius:var(--radius-md);background:var(--bg);color:var(--text);font-size:13px;font-family:var(--font)">
+              ${['open','in-progress','resolved','closed'].map(s =>
+                `<option value="${s}" ${t.status===s?'selected':''}>${s==='in-progress'?'In progress':s.charAt(0).toUpperCase()+s.slice(1)}</option>`
+              ).join('')}
+            </select>
+          </div>
+          <div>
+            <div class="section-label">Priority</div>
+            <select onchange="updateField('${t.id}','priority',this.value)" style="width:100%;padding:7px 10px;border:0.5px solid var(--border-hover);border-radius:var(--radius-md);background:var(--bg);color:var(--text);font-size:13px;font-family:var(--font)">
+              ${['high','med','low'].map(p =>
+                `<option value="${p}" ${t.priority===p?'selected':''}>${p==='med'?'Medium':p.charAt(0).toUpperCase()+p.slice(1)}</option>`
+              ).join('')}
+            </select>
+          </div>
+        </div>
+        ${kbSection}
+      </div>
+    </div>`;
+}
+
+function updateField(id, field, value) {
+  const t = state.tickets.find(x => x.id === id);
+  if (t) { t[field] = value; updateBadge(); }
+}
+
+// ── KB detail ─────────────────────────────────────────────────────────────────
+
+function openArticle(i) {
+  const a = state.kbArticles[i];
+  if (!a) return;
+  document.getElementById('overlay').innerHTML = `
+    <div class="overlay-bg" onclick="trapClick(event)">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-header-info">
+            <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:4px">${a.id}</div>
+            <div class="panel-title">${escHtml(a.title)}</div>
+          </div>
+          <button class="btn" onclick="closeOverlay()" aria-label="Close">&#10005;</button>
+        </div>
+        <div class="desc-box">${formatDesc(a.content)}</div>
+        <div class="section-label">Tags</div>
+        <div class="kb-tags">${a.tags.map(tag => `<span class="kb-tag">${escHtml(tag)}</span>`).join('')}</div>
+      </div>
+    </div>`;
+}
+
+// ── new ticket form ───────────────────────────────────────────────────────────
+
+function openNewTicket() {
+  document.getElementById('overlay').innerHTML = `
+    <div class="overlay-bg" onclick="trapClick(event)">
+      <div class="panel" style="max-width:460px">
+        <h3 style="font-size:15px;font-weight:500;margin-bottom:16px">New ticket</h3>
+        <div class="form-group"><label>Title *</label><input id="nt-title" placeholder="Brief description of the issue" autocomplete="off"></div>
+        <div class="form-group"><label>Description</label><textarea id="nt-desc" placeholder="Provide more detail about the issue..."></textarea></div>
+        <div class="row2">
+          <div class="form-group"><label>Category</label><select id="nt-cat"><option>Bug</option><option>Feature</option><option>Performance</option></select></div>
+          <div class="form-group"><label>Priority</label><select id="nt-pri"><option value="high">High</option><option value="med" selected>Medium</option><option value="low">Low</option></select></div>
+        </div>
+        <div class="form-group"><label>Assignee</label><input id="nt-assign" placeholder="Name or leave blank" autocomplete="off"></div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeOverlay()">Cancel</button>
+          <button class="btn btn-primary" onclick="createTicket()">Create ticket</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('nt-title').focus();
+}
+
+function createTicket() {
+  const title = document.getElementById('nt-title').value.trim();
+  if (!title) { document.getElementById('nt-title').style.borderColor = '#E24B4A'; return; }
+  const n = String(state.nextId++).padStart(3, '0');
+  const today = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  state.tickets.unshift({
+    id: `TK-${n}`,
+    title,
+    desc: document.getElementById('nt-desc').value.trim() || 'No description provided.',
+    status: 'open',
+    priority: document.getElementById('nt-pri').value,
+    category: document.getElementById('nt-cat').value,
+    assignee: document.getElementById('nt-assign').value.trim() || 'Unassigned',
+    created: today,
+    kb: [],
+  });
+  closeOverlay();
+  updateBadge();
+  state.filter = 'all';
+  renderTickets();
+}
+
+// ── new KB article form ───────────────────────────────────────────────────────
+
+function openNewArticle() {
+  document.getElementById('overlay').innerHTML = `
+    <div class="overlay-bg" onclick="trapClick(event)">
+      <div class="panel" style="max-width:460px">
+        <h3 style="font-size:15px;font-weight:500;margin-bottom:16px">New KB article</h3>
+        <div class="form-group"><label>Title *</label><input id="ka-title" placeholder="Article title" autocomplete="off"></div>
+        <div class="form-group"><label>Content *</label><textarea id="ka-content" style="min-height:120px" placeholder="Write the article content..."></textarea></div>
+        <div class="form-group"><label>Tags (comma-separated)</label><input id="ka-tags" placeholder="e.g. auth, bug, email" autocomplete="off"></div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeOverlay()">Cancel</button>
+          <button class="btn btn-primary" onclick="createArticle()">Add article</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('ka-title').focus();
+}
+
+function createArticle() {
+  const title   = document.getElementById('ka-title').value.trim();
+  const content = document.getElementById('ka-content').value.trim();
+  if (!title || !content) {
+    if (!title) document.getElementById('ka-title').style.borderColor = '#E24B4A';
+    if (!content) document.getElementById('ka-content').style.borderColor = '#E24B4A';
+    return;
+  }
+  const tags = document.getElementById('ka-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  const n = String(state.nextKbId++).padStart(3, '0');
+  state.kbArticles.push({ id:`KB-${n}`, title, content, tags });
+  closeOverlay();
+  renderKB();
+}
+
+// ── keyboard support ──────────────────────────────────────────────────────────
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeOverlay();
+});
+
+// ── init ──────────────────────────────────────────────────────────────────────
+
+updateBadge();
+renderTickets();
+</script>
+</body>
+</html>
